@@ -5,13 +5,13 @@ from src.constants import *
 
 @dataclass
 class GPTConfig:
-    vocab_size:int= 50257   # Vocabulary size
-    context_length: int= 256 # Shortened context length (orig: 1024)
-    emb_dim: int= 768        # Embedding dimension
-    n_heads: int= 12         # Number of attention heads
-    n_layers: int= 12        # Number of layers
-    drop_rate: float= 0.1      # Dropout rate
-    qkv_bias: bool= False   # Whether to include bias in QKV projections
+    vocab_size:int= VOCAB_SIZE   # Vocabulary size
+    context_length: int= CONTEXT_LENGTH # Shortened context length (orig: 1024)
+    emb_dim: int= EMB_DIM        # Embedding dimension
+    n_heads: int= N_HEADS         # Number of attention heads
+    n_layers: int= N_LAYERS        # Number of layers
+    drop_rate: float= DROP_RATE     # Dropout rate
+    qkv_bias: bool= QKV_BIAS   # Whether to include bias in QKV projections
 
     
 
@@ -34,16 +34,16 @@ class DataTransformationConfig:
 class ModelTrainingConfig:
     trained_model_file_path: str = os.path.join(ARTIFACT_DIR, MODEL_TRAINING_DIR, TRAINED_MODEL_FILE_NAME)
     dir_to_save_plots: str = os.path.join(ARTIFACT_DIR, MODEL_TRAINING_DIR, "plots")
-    learning_rate: float = 5e-4
-    weight_decay: float = 0.1
-    num_epochs: int = 1
-    eval_freq: int = 5
-    eval_iter: int = 5
-    start_context: str = "Every effort moves you"
-    batch_size: int = 2
-    max_length: int = 256
-    stride: int = 256
-    num_workers: int = 0
+    learning_rate: float = LEARNING_RATE
+    weight_decay: float = WEIGHT_DECAY
+    num_epochs: int = NUM_EPOCHS
+    eval_freq: int = EVAL_FREQ
+    eval_iter: int = EVAL_ITER
+    start_context: str = START_CONTEXT
+    batch_size: int = BATCH_SIZE
+    max_length: int = MAX_LENGTH
+    stride: int = STRIDE
+    num_workers: int = NUM_WORKERS
 
 @dataclass
 class ModelPredictionConfig:

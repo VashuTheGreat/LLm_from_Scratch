@@ -1,4 +1,5 @@
 
+from datasets.utils import logging
 from src.models.GPTModel import GPTModel
 from src.entity.config_entity import GPTConfig,ModelTrainingConfig
 from src.constants import TOKENIZER_NAME,DEVICE,MAX_NEW_TOKEN,TOP_K,TEMPERATURE,ALLOWED_SPECIAL_TOKEN
@@ -8,6 +9,12 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 import tiktoken
 import os
+
+from tqdm import tqdm
+
+import logging
+
+
 
 class GPTDatasetV1(Dataset):
             def __init__(self, txt, tokenizer, max_length, stride):
@@ -126,7 +133,7 @@ class MyModel():
                 max_new_tokens=50, context_size=context_size
             )
         decoded_text = MyModel.token_ids_to_text(token_ids, tokenizer)
-        print(decoded_text.replace("\n", " "))  # Compact print format
+        logging.info(decoded_text.replace("\n", " "))  # Compact print format
         model.train()
     @staticmethod
     def train_model(model, train_loader, val_loader, optimizer, device, num_epochs,
@@ -137,8 +144,10 @@ class MyModel():
         token_seen,global_step = 0,-1
 
         for epoch in range(num_epochs):
+            print(f"\nEpoch {epoch+1}/{num_epochs}")
             model.train()
-            for input_batch, target_batch in train_loader:
+            pbar=tqdm(train_loader,desc=f"Training Epoch {epoch+1}",leave=True,dynamic_ncols=True,total=len(train_loader))
+            for step,(input_batch, target_batch) in enumerate(pbar):
                 optimizer.zero_grad()
                 loss = MyModel.calc_loss_batch(input_batch, target_batch, model, device)
                 
@@ -146,6 +155,10 @@ class MyModel():
                 optimizer.step()
                 token_seen+=input_batch.numel()
                 global_step += 1
+                pbar.set_postfix({
+                    "step": step+1,
+                    "loss": f"{loss.item():.3f}"
+                })
 
                 if global_step % eval_freq == 0:
                     train_loss,val_loss=MyModel.evaluate_model(
@@ -154,8 +167,12 @@ class MyModel():
                     train_losses.append(train_loss)
                     val_losses.append(val_loss)
                     track_tokens_seen.append(token_seen)
-                    print(f"Ep {epoch+1} (Step {global_step:06d}): "
-                      f"Train loss {train_loss:.3f}, Val loss {val_loss:.3f}")
+                    # logging.info(f"Ep {epoch+1} (Step {global_step:06d}): "
+                    #   f"Train loss {train_loss:.3f}, Val loss {val_loss:.3f}")
+
+                    logging.info(
+                f"Ep {epoch+1} Step {global_step}: Train {train_loss:.3f}, Val {val_loss:.3f}"
+            )
             # Print a sample text after each epoch
             MyModel.generate_and_print_sample(
                 model, tokenizer, device, start_context
@@ -236,7 +253,7 @@ class MyModel():
     
 
     def predict(self,text:str,max_new_tokens:int=MAX_NEW_TOKEN,temperature:float=TEMPERATURE,top_k:int=TOP_K):
-        self.model.to("cpu")
+        self.model.to(DEVICE)
         self.model.eval()
         token_ids = MyModel.generate_text_advanced(
         model=self.model,
