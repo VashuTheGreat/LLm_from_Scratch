@@ -216,3 +216,25 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+
+artifacts/
+artifact/
+
+# ML files
+*.pt
+*.pth
+*.bin
+*.h5
+*.ckpt
+
+# datasets
+data/
+datasets/
+
+# cache
+__pycache__/
+*.pyc
+
+# env
+.venv/
