@@ -152,7 +152,7 @@ class MyModel():
         model.train()
     @staticmethod
     def train_model(model, train_loader, val_loader, optimizer, device, num_epochs,
-                       eval_freq, eval_iter, start_context, tokenizer):
+                       eval_freq, eval_iter, start_context, tokenizer,model_training_config):
         
         train_losses, val_losses,track_tokens_seen= [], [],[]
 
@@ -184,7 +184,17 @@ class MyModel():
                     track_tokens_seen.append(token_seen)
                     # logging.info(f"Ep {epoch+1} (Step {global_step:06d}): "
                     #   f"Train loss {train_loss:.3f}, Val loss {val_loss:.3f}")
+                    dir_path:str=os.path.join(os.path.dirname(model_training_config.trained_model_file_path),str(epoch))
+                    os.makedirs(dir_path, exist_ok=True)
+                    model_file_path:str=os.path.join(dir_path,"model.pth")
+                    plot_folder_path:str=os.path.join(dir_path,"plots")
 
+                    epochs_tensor = torch.linspace(0, model_training_config.num_epochs, len(train_losses))
+                    MyModel.plot_losses(epochs_tensor, track_tokens_seen, train_losses, val_losses, dir_to_save_plots=plot_folder_path)
+                    torch.save(model.state_dict(), model_file_path)
+
+                    
+                    logging.info(f"Model saved to the dir {dir_path}")
                     logging.info(
                 f"Ep {epoch+1} Step {global_step}: Train {train_loss:.3f}, Val {val_loss:.3f}"
             )
@@ -233,7 +243,8 @@ class MyModel():
             eval_freq=model_training_config.eval_freq,
             eval_iter=model_training_config.eval_iter,
             start_context=model_training_config.start_context,
-            tokenizer=self.tokenizer
+            tokenizer=self.tokenizer,
+            model_training_config=model_training_config
         )
 
                 # Note:  
