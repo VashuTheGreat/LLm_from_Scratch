@@ -44,6 +44,7 @@ class ModelTrainingConfig:
     max_length: int = MAX_LENGTH
     stride: int = STRIDE
     num_workers: int = NUM_WORKERS
+    load_pretrained: bool = LOAD_PRETRAINED   # Whether to load pretrained weights
 
 @dataclass
 class ModelPredictionConfig:

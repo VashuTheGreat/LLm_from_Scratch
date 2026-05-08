@@ -11,8 +11,12 @@ from src.pipelines.ModelTrainingPipeline import ModelTrainingPipeline
 from src.pipelines.ModelPredictionPipeline import ModelPredictionPipeline
 
 def main():
+    print("received args",sys.argv)
+    if not sys.argv or len(sys.argv)<=1:
+        raise ValueError("No dataset path found")
     logging.info("Pipeline test started.")
-    data_ingestion_config=DataIngestionConfig(raw_data_file_path="data/the-verdict.txt")
+    # data_ingestion_config=DataIngestionConfig(raw_data_file_path="data/the-verdict.txt")
+    data_ingestion_config=DataIngestionConfig(raw_data_file_path=sys.argv[1])
     data_ingestion_pipeline=DataIngestionPipeline(data_ingestion_config)
     data_ingestion_artifact=data_ingestion_pipeline.initiate()
     logging.info(f"Data Ingestion completed. Artifact: {data_ingestion_artifact}")

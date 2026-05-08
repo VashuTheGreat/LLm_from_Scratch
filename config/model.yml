@@ -1,16 +1,17 @@
 MODEL_CONFIG:
     TRAIN_TEST_SPLIT_RATIO: 0.1
     VOCAB_SIZE: 50257        # Vocabulary size
-    CONTEXT_LENGTH: 256      # Shortened context length (orig: 1024)
+    CONTEXT_LENGTH: 1024      # Shortened context length (orig: 1024)
     EMB_DIM: 768             # Embedding dimension
     N_HEADS: 12              # Number of attention heads
     N_LAYERS: 12             # Number of layers
     DROP_RATE: 0.1           # Dropout rate
-    QKV_BIAS: false          # QKV_BIAS
+    QKV_BIAS: True          # QKV_BIAS
     TOKENIZER_NAME: gpt2
+    LOAD_PRETRAINED_WEIGHTS: True
     LEARNING_RATE: 5e-4
     WEIGHT_DECAY: 0.1
-    NUM_EPOCHS: 10
+    NUM_EPOCHS: 1
     EVAL_FREQ: 5
     EVAL_ITER: 5
     START_CONTEXT: "Every effort moves you"

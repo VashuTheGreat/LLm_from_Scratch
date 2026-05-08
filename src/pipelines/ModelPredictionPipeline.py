@@ -18,3 +18,5 @@ class ModelPredictionPipeline:
         except Exception as e:
             logging.error(f"Error in ModelPredictionPipeline: {str(e)}")
             raise MyException(f"Error in Model Prediction Pipeline: {str(e)}")
+
+   

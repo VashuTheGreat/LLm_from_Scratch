@@ -10,6 +10,8 @@ from matplotlib.ticker import MaxNLocator
 import tiktoken
 import os
 
+from src.data_access.download_gpt_weights import GPT_Weight_Downloader
+
 from tqdm import tqdm
 
 import logging
@@ -38,13 +40,26 @@ class GPTDatasetV1(Dataset):
                 return self.input_ids[idx], self.target_ids[idx]
 
 class MyModel():
-    def __init__(self,load_pretrained_weights=False):
+    def __init__(self,load_pretrained_weights=False,model_size:str="124M",models_dir="gpt"):
         import dataclasses
         self.config=dataclasses.asdict(GPTConfig())
         self.model=GPTModel(self.config)
         self.tokenizer = tiktoken.get_encoding(TOKENIZER_NAME)
         if load_pretrained_weights:
-            pass
+            logging.info(f"loading pretreined weights of model_size: {model_size} and models_dir: {models_dir}")
+            gpt_weight_downloader=GPT_Weight_Downloader()
+
+            settings,params=gpt_weight_downloader.download_and_load_gpt2(model_size=model_size,models_dir=models_dir)
+            self.config.update(settings)
+            # Map 'n_ctx' for context length to our config key 'context_length'
+            if "n_ctx" in settings:
+                self.config["context_length"] = settings["n_ctx"]
+            # GPT-2 pretrained weights include Q/K/V biases; enable them before rebuilding
+            # self.config["qkv_bias"] = True
+            self.model=GPTModel(self.config)
+            logging.info("Updated settings gpt config to ",settings)
+            gpt_weight_downloader.load_weights_into_gpt(gpt=self.model,params=params)
+            
     
     @staticmethod
     def calc_loss_batch(input_batch, target_batch, model, device):

@@ -58,7 +58,7 @@ class ModelTrainingComponent:
                 "val": val_loader
             }
             
-            my_model = MyModel()
+            my_model = MyModel(load_pretrained_weights=self.model_training_config.load_pretrained)
             
             logging.info("Fitting model.")
             my_model.fit(X, self.model_training_config)

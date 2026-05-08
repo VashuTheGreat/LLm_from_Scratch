@@ -239,4 +239,4 @@ __pycache__/
 # env
 .venv/
 
-src/data_access/download_gpt_weights.py
+gpt/
