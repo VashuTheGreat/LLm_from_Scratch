@@ -229,7 +229,7 @@ artifact/
 *.ckpt
 
 # datasets
-# data/
+data/
 datasets/
 
 # cache
