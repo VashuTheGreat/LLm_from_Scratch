@@ -283,7 +283,7 @@ class MyModel():
         self.model.eval()
         token_ids = MyModel.generate_text_advanced(
         model=self.model,
-        idx=MyModel.text_to_token_ids(self.tokenizer, text=text),
+        idx=MyModel.text_to_token_ids(self.tokenizer, text=text).to(DEVICE),
         max_new_tokens=max_new_tokens,
         context_size=self.config["context_length"],
         temperature=temperature,
