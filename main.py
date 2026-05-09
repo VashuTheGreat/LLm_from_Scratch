@@ -9,14 +9,20 @@ load_dotenv()
 from src.pipelines.ModelPredictionPipeline import ModelPredictionPipeline
 from src.entity.config_entity import ModelPredictionConfig
 
-if not sys.argv or len(sys.argv) <= 1:
+is_terminal = str(os.getenv("TERMINAL", "False")).lower() in ["true", "1", "yes", "t"]
+
+if not is_terminal:
+    import subprocess
+    subprocess.run("streamlit run api/main.py", shell=True)
+    sys.exit(0)
+
+elif not sys.argv or len(sys.argv) <= 1:
     raise ValueError("No model path found")
 
 model_path = sys.argv[1]
 model_prediction_config = ModelPredictionConfig(model_path=model_path)
 model_prediction_pipeline = ModelPredictionPipeline(model_prediction_config)
 
-is_terminal = os.getenv("TERMINAL")
 
 top_k = 40
 max_new_tokens = 200
@@ -53,5 +59,3 @@ if is_terminal:
         except KeyboardInterrupt:
             print(f"{RESET_COLOR}\nExiting...")
             break
-else:
-    from api.main import app

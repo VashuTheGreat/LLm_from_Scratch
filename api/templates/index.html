@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Chat Interface</title>
+    <style>
+        :root {
+            --bg-color: #343541;
+            --chat-bg: #444654;
+            --text-color: #ececf1;
+            --input-bg: #40414f;
+            --border-color: rgba(32,33,35,.5);
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        .chat-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-bottom: 120px;
+        }
+        .message {
+            padding: 24px;
+            display: flex;
+            justify-content: center;
+        }
+        .message.ai {
+            background-color: var(--chat-bg);
+        }
+        .message-content {
+            max-width: 800px;
+            width: 100%;
+            display: flex;
+            gap: 16px;
+        }
+        .avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .user-avatar { background-color: #10a37f; }
+        .ai-avatar { background-color: #0b8064; }
+        .input-area {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 24px;
+            background: linear-gradient(180deg, rgba(53,55,64,0), #353740 58.85%);
+            display: flex;
+            justify-content: center;
+        }
+        .input-box {
+            max-width: 800px;
+            width: 100%;
+            position: relative;
+        }
+        input[type="text"] {
+            width: 100%;
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 16px 48px 16px 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+        button {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #10a37f;
+            cursor: pointer;
+            padding: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="message ai">
+            <div class="message-content">
+                <div class="avatar ai-avatar">AI</div>
+                <div>Hello! How can I help you today?</div>
+            </div>
+        </div>
+    </div>
+    <div class="input-area">
+        <div class="input-box">
+            <input type="text" placeholder="Send a message..." autocomplete="off">
+            <button>
+                <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="20" width="20" xmlns="http://www.w3.org/2000/svg"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+        </div>
+    </div>
+</body>
+</html>
