@@ -11,7 +11,7 @@ import tiktoken
 import os
 
 from src.data_access.download_gpt_weights import GPT_Weight_Downloader
-
+from src.constants import EOT
 from tqdm import tqdm
 
 import logging
@@ -256,7 +256,7 @@ class MyModel():
 
 
     @staticmethod
-    def generate_text_advanced(model, idx, max_new_tokens, context_size, temperature=1.0, top_k=None):
+    def generate_text_advanced(model, idx, max_new_tokens, context_size, temperature=1.0, top_k=None, eot_id=None):
         for _ in range(max_new_tokens):
             idx_cond = idx[:, -context_size:]
             logits = model(idx_cond)
@@ -270,17 +270,25 @@ class MyModel():
                     next_token_logits[next_token_logits < top_k_values[:, -1, None]] = -float('Inf')
 
                 next_token_id = torch.multinomial(torch.nn.functional.softmax(next_token_logits, dim=-1), num_samples=1)
+                if eot_id is not None and next_token_id.item() == eot_id:
+                    logging.debug(f"Model predicted {EOT}")
+                    return idx
                 idx = torch.cat((idx, next_token_id), dim=1)
             else:
                 next_token_logits = logits[:, -1, :]
                 next_token_id = torch.argmax(next_token_logits, dim=-1, keepdim=True)
+                if eot_id is not None and next_token_id.item() == eot_id:
+                    logging.debug(f"Model predicted {EOT}")
+                    return idx
                 idx = torch.cat((idx, next_token_id), dim=1)    
+
         return idx
     
 
     def predict(self,text:str,max_new_tokens:int=MAX_NEW_TOKEN,temperature:float=TEMPERATURE,top_k:int=TOP_K):
         self.model.to(DEVICE)
         self.model.eval()
+        eot_id = self.tokenizer.encode(EOT, allowed_special={EOT})[0]
         token_ids = MyModel.generate_text_advanced(
         model=self.model,
         idx=MyModel.text_to_token_ids(self.tokenizer, text=text).to(DEVICE),
@@ -288,5 +296,83 @@ class MyModel():
         context_size=self.config["context_length"],
         temperature=temperature,
         top_k=top_k,
+        eot_id=eot_id
         )
         return MyModel.token_ids_to_text(token_ids, self.tokenizer)
+
+    @staticmethod
+    def generate_text_advanced_yield(model, idx, max_new_tokens, context_size, temperature=1.0, top_k=None, eot_id=None):
+        for _ in range(max_new_tokens):
+            idx_cond = idx[:, -context_size:]
+            logits = model(idx_cond)
+
+            if temperature>0:
+                
+                next_token_logits = logits[:, -1, :] / temperature
+
+                if top_k is not None:
+                    top_k_values, _ = torch.topk(next_token_logits, top_k)
+                    next_token_logits[next_token_logits < top_k_values[:, -1, None]] = -float('Inf')
+
+                next_token_id = torch.multinomial(torch.nn.functional.softmax(next_token_logits, dim=-1), num_samples=1)
+                if eot_id is not None and next_token_id.item() == eot_id:
+                    logging.debug(f"Model predicted {EOT}")
+                    break
+                idx = torch.cat((idx, next_token_id), dim=1)
+                yield next_token_id
+            else:
+                next_token_logits = logits[:, -1, :]
+                next_token_id = torch.argmax(next_token_logits, dim=-1, keepdim=True)
+                if eot_id is not None and next_token_id.item() == eot_id:
+                    logging.debug(f"Model predicted {EOT}")
+                    break
+                idx = torch.cat((idx, next_token_id), dim=1)    
+                yield next_token_id
+
+    def predict_yeild(self,text:str,max_new_tokens:int=MAX_NEW_TOKEN,temperature:float=TEMPERATURE,top_k:int=TOP_K):
+        self.model.to(DEVICE)
+        self.model.eval()
+        eot_id = self.tokenizer.encode(EOT, allowed_special={EOT})[0]
+        idx = MyModel.text_to_token_ids(self.tokenizer, text=text).to(DEVICE)
+        
+        buffer = ""
+        stop_words = [
+            "User:", "user:", "User :", "user :", "\nUser", "\nuser",
+            "Assistant:", "assistant:", "assistent:", "\nAssistant", "\nassistant", "\nassistent"
+        ]
+        
+        for token_id in MyModel.generate_text_advanced_yield(
+            model=self.model,
+            idx=idx,
+            max_new_tokens=max_new_tokens,
+            context_size=self.config["context_length"],
+            temperature=temperature,
+            top_k=top_k,
+            eot_id=eot_id
+        ):
+            decoded_token = MyModel.token_ids_to_text(token_id, self.tokenizer)
+            buffer += decoded_token
+            
+            # Check if any complete stop word is found
+            should_return = False
+            for stop_word in stop_words:
+                if stop_word in buffer:
+                    yield buffer.split(stop_word)[0]
+                    return
+            
+            # Check if the end of the buffer partially matches a stop word
+            is_partial = False
+            for stop_word in stop_words:
+                for i in range(1, len(stop_word)):
+                    if buffer.endswith(stop_word[:i]):
+                        is_partial = True
+                        break
+                if is_partial:
+                    break
+            
+            if not is_partial:
+                yield buffer
+                buffer = ""
+                
+        if buffer:
+            yield buffer

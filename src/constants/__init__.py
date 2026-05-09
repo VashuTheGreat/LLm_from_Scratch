@@ -18,6 +18,7 @@ DATA_LOADER_FILE_NAME="data_loader.pkl"
 
 
 ALLOWED_SPECIAL_TOKEN="<|endoftext|>"
+EOT="<|endoftext|>"
 
 DATA_TRAIN_FILE_NAME="train.npy"
 DATA_TEST_FILE_NAME="test.npy"

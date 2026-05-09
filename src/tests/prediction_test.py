@@ -16,8 +16,12 @@ def main():
     model_path:str=sys.argv[1]
     model_prediction_config=ModelPredictionConfig(model_path=model_path)
     model_prediction_pipeline=ModelPredictionPipeline(model_prediction_config)
-    prediction=model_prediction_pipeline.predict("Every effort moves you")
-    logging.info(f"Model Prediction completed. Prediction: {prediction}")
+    prediction_generator=model_prediction_pipeline.predict_yeild("User: So, you also like coffee? \n Assistant:",max_new_tokens=200,temperature=0.8,top_k=40)
+    print("Prediction: ", end="")
+    for token in prediction_generator:
+        print(token, end="", flush=True)
+    print()
+    logging.info("Model Prediction completed via generator.")
 
     logging.info("Pipeline test completed successfully.")
 
